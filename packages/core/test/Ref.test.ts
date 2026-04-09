@@ -121,3 +121,27 @@ describe("FunctionReference", () => {
     >();
   });
 });
+
+describe("OptionalArgs", () => {
+  test("optional tuple when args are empty", () => {
+    const _spec = FunctionSpec.publicQuery({
+      name: "list",
+      args: Schema.Struct({}),
+      returns: Schema.Void,
+    });
+    type Ref_ = Ref.FromFunctionSpec<typeof _spec>;
+    expectTypeOf<Ref.OptionalArgs<Ref_>>().toEqualTypeOf<[args?: {}]>();
+  });
+
+  test("required tuple when args have keys", () => {
+    const _spec = FunctionSpec.publicQuery({
+      name: "get",
+      args: Schema.Struct({ id: Schema.String }),
+      returns: Schema.Void,
+    });
+    type Ref_ = Ref.FromFunctionSpec<typeof _spec>;
+    expectTypeOf<Ref.OptionalArgs<Ref_>>().toEqualTypeOf<
+      [args: { readonly id: string }]
+    >();
+  });
+});
