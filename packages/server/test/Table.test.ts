@@ -84,4 +84,54 @@ describe("Table", () => {
       confectNotesTableDefinition,
     );
   });
+
+  it("supports indexes on name fields when the schema includes an optional ID", () => {
+    const confectOrganizationsTableDefinition = Table.make(
+      "organizations",
+      Schema.Struct({
+        name: Schema.String,
+        description: Schema.optional(Schema.String),
+        createdBy: Schema.optional(GenericId.GenericId("users")),
+      }),
+    )
+      .index("by_name", ["name"])
+      .searchIndex("search_name", { searchField: "name" }).tableDefinition;
+
+    const convexOrganizationsTableDefinition = defineTable({
+      name: v.string(),
+      description: v.optional(v.string()),
+      createdBy: v.optional(v.id("users")),
+    })
+      .index("by_name", ["name"])
+      .searchIndex("search_name", { searchField: "name" });
+
+    expectTypeOf(confectOrganizationsTableDefinition).toEqualTypeOf(
+      convexOrganizationsTableDefinition,
+    );
+    expect(convexOrganizationsTableDefinition).toStrictEqual(
+      confectOrganizationsTableDefinition,
+    );
+  });
+
+  it("supports indexes on name fields when the schema includes optional bytes", () => {
+    const confectImagesTableDefinition = Table.make(
+      "images",
+      Schema.Struct({
+        name: Schema.String,
+        bytes: Schema.optional(Schema.instanceOf(ArrayBuffer)),
+      }),
+    ).index("by_name", ["name"]).tableDefinition;
+
+    const convexImagesTableDefinition = defineTable({
+      name: v.string(),
+      bytes: v.optional(v.bytes()),
+    }).index("by_name", ["name"]);
+
+    expectTypeOf(confectImagesTableDefinition).toEqualTypeOf(
+      convexImagesTableDefinition,
+    );
+    expect(convexImagesTableDefinition).toStrictEqual(
+      confectImagesTableDefinition,
+    );
+  });
 });

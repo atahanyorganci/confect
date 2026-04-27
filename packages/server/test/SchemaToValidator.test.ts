@@ -1250,6 +1250,36 @@ describe("ValueToValidator", () => {
 
       expectTypeOf<CompiledValidator>().toEqualTypeOf<ExpectedValidator>();
     });
+
+    test("{ name: string; bytes?: ArrayBuffer | undefined }", () => {
+      const _expectedValidator = v.object({
+        name: v.string(),
+        bytes: v.optional(v.bytes()),
+      });
+      type ExpectedValidator = typeof _expectedValidator;
+
+      type CompiledValidator = ValueToValidator<{
+        name: string;
+        bytes?: ArrayBuffer | undefined;
+      }>;
+
+      expectTypeOf<CompiledValidator>().toEqualTypeOf<ExpectedValidator>();
+    });
+
+    test("{ name: string; userId?: GenericId<'users'> | undefined }", () => {
+      const _expectedValidator = v.object({
+        name: v.string(),
+        userId: v.optional(v.id("users")),
+      });
+      type ExpectedValidator = typeof _expectedValidator;
+
+      type CompiledValidator = ValueToValidator<{
+        name: string;
+        userId?: GenericId<"users"> | undefined;
+      }>;
+
+      expectTypeOf<CompiledValidator>().toEqualTypeOf<ExpectedValidator>();
+    });
   });
 
   describe("recursive", () => {
@@ -1334,6 +1364,40 @@ describe(compileTableSchema, () => {
     const expectedValidator = v.object({
       text: v.string(),
       userId: v.optional(v.id("users")),
+    });
+
+    expectTypeOf(compiledValidator).toEqualTypeOf(expectedValidator);
+    expect(compiledValidator).toStrictEqual(expectedValidator);
+  });
+
+  test("succeeds if provided Schema has a name field and optional ID", () => {
+    const compiledValidator = compileTableSchema(
+      Schema.Struct({
+        name: Schema.String,
+        userId: Schema.optional(GenericId("users")),
+      }),
+    );
+
+    const expectedValidator = v.object({
+      name: v.string(),
+      userId: v.optional(v.id("users")),
+    });
+
+    expectTypeOf(compiledValidator).toEqualTypeOf(expectedValidator);
+    expect(compiledValidator).toStrictEqual(expectedValidator);
+  });
+
+  test("succeeds if provided Schema has a name field and optional bytes", () => {
+    const compiledValidator = compileTableSchema(
+      Schema.Struct({
+        name: Schema.String,
+        bytes: Schema.optional(Schema.instanceOf(ArrayBuffer)),
+      }),
+    );
+
+    const expectedValidator = v.object({
+      name: v.string(),
+      bytes: v.optional(v.bytes()),
     });
 
     expectTypeOf(compiledValidator).toEqualTypeOf(expectedValidator);
